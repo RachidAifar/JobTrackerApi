@@ -1,0 +1,15 @@
+.vs/
+bin/
+obj/
+*.user
+*.suo
+*.cache
+*.log
+*.dll
+*.exe
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+node_modules/
+appsettings.Development.json
