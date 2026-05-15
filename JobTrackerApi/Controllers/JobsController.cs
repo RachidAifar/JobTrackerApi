@@ -15,5 +15,13 @@ namespace JobTrackerApi.Controllers
         {
             return Ok(JobRepository.Jobs);
         }
+
+        [HttpPost]
+        public ActionResult<Job> CreateJob(Job newJob) 
+        { 
+            newJob.Id = JobRepository.Jobs.Max(i => i.Id)+1;
+            JobRepository.Jobs.Add(newJob);
+            return CreatedAtAction(nameof(GetAllJobs), new { id = newJob.Id }, newJob);
+        }
     }
 }
