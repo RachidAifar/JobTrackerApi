@@ -1,7 +1,6 @@
 ﻿using JobTrackerApi.Data;
 using JobTrackerApi.Dtos;
 using JobTrackerApi.Models;
-using JobTrackerAPI.Dtos;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -27,6 +26,29 @@ namespace JobTrackerApi.Controllers
             return Ok(jobs);
         }
 
+        // GET: api/jobs/5
+        [HttpGet("{id}")]
+        public ActionResult<JobResponseDto> GetJob(int id)
+        {
+            var job = JobRepository.Jobs.FirstOrDefault(j => j.Id == id);
+
+            if (job == null)
+                return NotFound();
+
+            var response = new JobResponseDto
+            {
+                Id = job.Id,
+                Company = job.Company,
+                Position = job.Position,
+                Status = job.Status,
+                AppliedDate = job.AppliedDate
+            };
+
+            return Ok(response);
+        }
+
+
+
         //Post : api/job
         [HttpPost]
         public ActionResult<JobResponseDto> CreateJob(CreateJobDto dto)
@@ -51,7 +73,7 @@ namespace JobTrackerApi.Controllers
                 AppliedDate = job.AppliedDate
             };
 
-            return CreatedAtAction(nameof(GetJobs), new { id = job.Id }, response);
+            return CreatedAtAction(nameof(GetJob), new { id = job.Id }, response);
         }
 
         //Put : api/job/id
