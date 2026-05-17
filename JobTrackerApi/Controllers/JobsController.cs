@@ -43,6 +43,27 @@ namespace JobTrackerApi.Controllers
             return NoContent();
         }
 
+        //Delete : api/jobs/id
+        [HttpDelete("{id}")]
+        public ActionResult DeleteJob(int id)
+        {
+            var job = JobRepository.Jobs.FirstOrDefault(j => j.Id == id);
+
+            if (job == null)
+                return NotFound();
+
+            JobRepository.Jobs.Remove(job);
+
+            return NoContent();
+        }
+
+
+
+
+
+
+
+
 
 
     }
