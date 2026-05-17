@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using JobTrackerApi.Data;
+﻿using JobTrackerApi.Data;
+using JobTrackerApi.Dtos;
 using JobTrackerApi.Models;
+using JobTrackerAPI.Dtos;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 namespace JobTrackerApi.Controllers
 {
@@ -11,34 +13,59 @@ namespace JobTrackerApi.Controllers
     {
         //GET: api/jobs
         [HttpGet]
-        public ActionResult<List<Job>> GetAllJobs()
+        public ActionResult<IEnumerable<JobResponseDto>> GetAllJobs()
         {
-            return Ok(JobRepository.Jobs);
+            var jobs = JobRepository.Jobs.Select(job => new JobResponseDto
+            {
+                Id = job.Id,
+                Company = job.Company,
+                Position = job.Position,
+                Status = job.Status,
+                AppliedDate = job.AppliedDate
+            }).ToList();
+
+            return Ok(jobs);
         }
 
         //Post : api/job
         [HttpPost]
-        public ActionResult<Job> CreateJob(Job newJob)
+        public ActionResult<JobResponseDto> CreateJob(CreateJobDto dto)
         {
-            newJob.Id = JobRepository.Jobs.Max(i => i.Id) + 1;
-            JobRepository.Jobs.Add(newJob);
-            return CreatedAtAction(nameof(GetAllJobs), new { id = newJob.Id }, newJob);
+            var job = new Job
+            {
+                Id = JobRepository.Jobs.Count + 1,
+                Company = dto.Company,
+                Position = dto.Position,
+                Status = "Applied",
+                AppliedDate = DateTime.UtcNow
+            };
+
+            JobRepository.Jobs.Add(job);
+
+            var response = new JobResponseDto
+            {
+                Id = job.Id,
+                Company = job.Company,
+                Position = job.Position,
+                Status = job.Status,
+                AppliedDate = job.AppliedDate
+            };
+
+            return CreatedAtAction(nameof(GetJobs), new { id = job.Id }, response);
         }
 
         //Put : api/job/id
         [HttpPut("{id}")]
-        public ActionResult UpdateJob(int id, Job updateJob)
+        public ActionResult UpdateJob(int id, UpdateJobDto dto)
         {
-            var job = JobRepository.Jobs.FirstOrDefault(i => i.Id == id);
+            var job = JobRepository.Jobs.FirstOrDefault(j => j.Id == id);
 
             if (job == null)
                 return NotFound();
 
-            job.Company = updateJob.Company;
-            job.Position = updateJob.Position;
-            job.Status = updateJob.Status;
-            job.AppliedDate = updateJob.AppliedDate;
-
+            job.Company = dto.Company;
+            job.Position = dto.Position;
+            job.Status = dto.Status;
 
             return NoContent();
         }
