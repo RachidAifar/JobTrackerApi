@@ -10,41 +10,48 @@ namespace JobTrackerApi.Controllers
     [Route("api/[controller]")]
     public class JobsController : ControllerBase
     {
+        private readonly JobDbContext _context;
+        public JobsController(JobDbContext context)
+        {
+            _context = context;
+        }
+
+
         //GET: api/jobs
         [HttpGet]
-        public ActionResult<IEnumerable<JobResponseDto>> GetAllJobs()
+        public ActionResult<IEnumerable<JobResponseDto>> GetJobs()
         {
-            var jobs = JobRepository.Jobs.Select(job => new JobResponseDto
+            var jobs = _context.Jobs.ToList();
+
+            var response = jobs.Select(job => new JobResponseDto
             {
                 Id = job.Id,
                 Company = job.Company,
                 Position = job.Position,
                 Status = job.Status,
                 AppliedDate = job.AppliedDate
-            }).ToList();
+            });
 
-            return Ok(jobs);
+            return Ok(response);
         }
 
         // GET: api/jobs/5
         [HttpGet("{id}")]
         public ActionResult<JobResponseDto> GetJob(int id)
         {
-            var job = JobRepository.Jobs.FirstOrDefault(j => j.Id == id);
+            var job = _context.Jobs.FirstOrDefault(j => j.Id == id);
 
             if (job == null)
                 return NotFound();
 
-            var response = new JobResponseDto
+            return Ok(new JobResponseDto
             {
                 Id = job.Id,
                 Company = job.Company,
                 Position = job.Position,
                 Status = job.Status,
                 AppliedDate = job.AppliedDate
-            };
-
-            return Ok(response);
+            });
         }
 
 
@@ -55,32 +62,30 @@ namespace JobTrackerApi.Controllers
         {
             var job = new Job
             {
-                Id = JobRepository.Jobs.Count + 1,
                 Company = dto.Company,
                 Position = dto.Position,
                 Status = "Applied",
                 AppliedDate = DateTime.UtcNow
             };
 
-            JobRepository.Jobs.Add(job);
+            _context.Jobs.Add(job);
+            _context.SaveChanges();
 
-            var response = new JobResponseDto
+            return Ok(new JobResponseDto
             {
                 Id = job.Id,
                 Company = job.Company,
                 Position = job.Position,
                 Status = job.Status,
                 AppliedDate = job.AppliedDate
-            };
-
-            return CreatedAtAction(nameof(GetJob), new { id = job.Id }, response);
+            });
         }
 
         //Put : api/job/id
         [HttpPut("{id}")]
         public ActionResult UpdateJob(int id, UpdateJobDto dto)
         {
-            var job = JobRepository.Jobs.FirstOrDefault(j => j.Id == id);
+            var job = _context.Jobs.FirstOrDefault(j => j.Id == id);
 
             if (job == null)
                 return NotFound();
@@ -89,19 +94,21 @@ namespace JobTrackerApi.Controllers
             job.Position = dto.Position;
             job.Status = dto.Status;
 
+            _context.SaveChanges();
+
             return NoContent();
         }
 
-        //Delete : api/jobs/id
         [HttpDelete("{id}")]
         public ActionResult DeleteJob(int id)
         {
-            var job = JobRepository.Jobs.FirstOrDefault(j => j.Id == id);
+            var job = _context.Jobs.FirstOrDefault(j => j.Id == id);
 
             if (job == null)
                 return NotFound();
 
-            JobRepository.Jobs.Remove(job);
+            _context.Jobs.Remove(job);
+            _context.SaveChanges();
 
             return NoContent();
         }
