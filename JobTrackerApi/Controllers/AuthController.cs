@@ -12,23 +12,15 @@ namespace JobTrackerApi.Controllers
     [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
-
         private readonly JobDbContext _context;
-        private readonly PasswordHasher<User> _passwordHasher;
-
+        private readonly IPasswordHasher<User> _passwordHasher;  // ⭐ CHANGED THIS
         private readonly JwtService _jwt;
 
-        public AuthController(JobDbContext context, JwtService jwt)
+        public AuthController(JobDbContext context, JwtService jwt, IPasswordHasher<User> passwordHasher)
         {
             _context = context;
             _jwt = jwt;
-        }
-
-
-        public AuthController(JobDbContext context)
-        {
-            _context = context;
-            _passwordHasher = new PasswordHasher<User>();
+            _passwordHasher = passwordHasher;
         }
 
         [HttpPost("register")]
@@ -42,12 +34,9 @@ namespace JobTrackerApi.Controllers
             {
                 Email = dto.Email
             };
-
             user.PasswordHash = _passwordHasher.HashPassword(user, dto.Password);
-
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
-
             return Ok("User registered successfully");
         }
 
@@ -60,16 +49,14 @@ namespace JobTrackerApi.Controllers
             if (user == null)
                 return Unauthorized("Invalid email or password");
 
-            var isValidPassword = BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash);
+            // ⭐ Use PasswordHasher.VerifyHashedPassword instead of BCrypt
+            var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, dto.Password);
 
-            if (!isValidPassword)
+            if (result == PasswordVerificationResult.Failed)
                 return Unauthorized("Invalid email or password");
 
             var token = _jwt.GenerateToken(user.Id, user.Email);
-
             return Ok(new { token });
         }
     }
-
-
 }

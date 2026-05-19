@@ -1,13 +1,20 @@
 using JobTrackerApi.Data;
-using Microsoft.EntityFrameworkCore;
+using JobTrackerApi.Models;
+using JobTrackerApi.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var jwtKey = builder.Configuration["Jwt:Key"];
-var key = Encoding.ASCII.GetBytes(jwtKey);
+var jwtKey = builder.Configuration["Jwt:Key"]
+    ?? throw new Exception("Jwt Key is missing in appsettings.json");
+
+var key = Encoding.UTF8.GetBytes(jwtKey);
+builder.Services.AddScoped<JwtService>();
+builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 
 builder.Services.AddAuthentication(options =>
 {
@@ -44,15 +51,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
 app.UseHttpsRedirection();
 
+app.UseAuthentication();   
 app.UseAuthorization();
 
 app.MapControllers();
-
-
-
-
 
 app.Run();
