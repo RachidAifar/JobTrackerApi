@@ -11,5 +11,6 @@ namespace JobTrackerApi.Data
         }
 
         public DbSet<Job> Jobs { get; set; }
+        public DbSet<User> Users { get; set; }
     }
 }
