@@ -13,7 +13,7 @@ namespace JobTrackerApi.Controllers
     public class AuthController : ControllerBase
     {
         private readonly JobDbContext _context;
-        private readonly IPasswordHasher<User> _passwordHasher;  // ⭐ CHANGED THIS
+        private readonly IPasswordHasher<User> _passwordHasher;  
         private readonly JwtService _jwt;
 
         public AuthController(JobDbContext context, JwtService jwt, IPasswordHasher<User> passwordHasher)

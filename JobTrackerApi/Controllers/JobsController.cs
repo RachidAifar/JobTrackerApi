@@ -3,7 +3,9 @@ using JobTrackerApi.Dtos;
 using JobTrackerApi.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 namespace JobTrackerApi.Controllers
 {
     [ApiController]
@@ -15,6 +17,21 @@ namespace JobTrackerApi.Controllers
         {
             _context = context;
         }
+
+        [Authorize]
+        [HttpGet("myjobs")]
+        public async Task<IActionResult> GetMyJob()
+        {
+            var userId = int.Parse(
+                User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+            var jobs = await _context.Jobs
+                .Where(j => j.CreatedByUserId == userId)
+                .ToListAsync();
+            return Ok(jobs);
+        }
+
+
 
 
         //GET: api/jobs
