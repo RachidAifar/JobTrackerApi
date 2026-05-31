@@ -6,6 +6,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+
+
+
+
+
+
 namespace JobTrackerApi.Controllers
 {
     [ApiController]
@@ -74,15 +80,24 @@ namespace JobTrackerApi.Controllers
 
 
         //Post : api/job
+        [Authorize]
         [HttpPost]
         public ActionResult<JobResponseDto> CreateJob(CreateJobDto dto)
         {
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!int.TryParse(userIdString, out int userId))
+            {
+                return Unauthorized("Invalid user token");
+            }
+
             var job = new Job
             {
                 Company = dto.Company,
                 Position = dto.Position,
                 Status = "Applied",
-                AppliedDate = DateTime.UtcNow
+                AppliedDate = DateTime.UtcNow,
+                CreatedByUserId = userId
             };
 
             _context.Jobs.Add(job);
@@ -99,6 +114,7 @@ namespace JobTrackerApi.Controllers
         }
 
         //Put : api/job/id
+        [Authorize]
         [HttpPut("{id}")]
         public ActionResult UpdateJob(int id, UpdateJobDto dto)
         {
@@ -116,6 +132,7 @@ namespace JobTrackerApi.Controllers
             return NoContent();
         }
 
+        [Authorize]
         [HttpDelete("{id}")]
         public ActionResult DeleteJob(int id)
         {
@@ -129,15 +146,5 @@ namespace JobTrackerApi.Controllers
 
             return NoContent();
         }
-
-
-
-
-
-
-
-
-
-
     }
 }
