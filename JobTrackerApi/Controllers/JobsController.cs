@@ -3,6 +3,14 @@ using JobTrackerApi.Dtos;
 using JobTrackerApi.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
+
+
+
+
+
 
 namespace JobTrackerApi.Controllers
 {
@@ -15,6 +23,21 @@ namespace JobTrackerApi.Controllers
         {
             _context = context;
         }
+
+        [Authorize]
+        [HttpGet("myjobs")]
+        public async Task<IActionResult> GetMyJob()
+        {
+            var userId = int.Parse(
+                User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+            var jobs = await _context.Jobs
+                .Where(j => j.CreatedByUserId == userId)
+                .ToListAsync();
+            return Ok(jobs);
+        }
+
+
 
 
         //GET: api/jobs
@@ -57,15 +80,24 @@ namespace JobTrackerApi.Controllers
 
 
         //Post : api/job
+        [Authorize]
         [HttpPost]
         public ActionResult<JobResponseDto> CreateJob(CreateJobDto dto)
         {
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!int.TryParse(userIdString, out int userId))
+            {
+                return Unauthorized("Invalid user token");
+            }
+
             var job = new Job
             {
                 Company = dto.Company,
                 Position = dto.Position,
                 Status = "Applied",
-                AppliedDate = DateTime.UtcNow
+                AppliedDate = DateTime.UtcNow,
+                CreatedByUserId = userId
             };
 
             _context.Jobs.Add(job);
@@ -82,10 +114,16 @@ namespace JobTrackerApi.Controllers
         }
 
         //Put : api/job/id
+        [Authorize]
         [HttpPut("{id}")]
         public ActionResult UpdateJob(int id, UpdateJobDto dto)
         {
-            var job = _context.Jobs.FirstOrDefault(j => j.Id == id);
+            var userId = int.Parse(
+                User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+            var job = _context.Jobs.FirstOrDefault(j =>
+                j.Id == id &&
+                j.CreatedByUserId == userId);
 
             if (job == null)
                 return NotFound();
@@ -99,10 +137,16 @@ namespace JobTrackerApi.Controllers
             return NoContent();
         }
 
+        [Authorize]
         [HttpDelete("{id}")]
         public ActionResult DeleteJob(int id)
         {
-            var job = _context.Jobs.FirstOrDefault(j => j.Id == id);
+            var userId = int.Parse(
+                User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+            var job = _context.Jobs.FirstOrDefault(j =>
+                j.Id == id &&
+                j.CreatedByUserId == userId);
 
             if (job == null)
                 return NotFound();
@@ -113,14 +157,36 @@ namespace JobTrackerApi.Controllers
             return NoContent();
         }
 
+        //[HttpPut("{id}")]
+        //public ActionResult UpdateJob(int id, UpdateJobDto dto)
+        //{
+        //    var job = _context.Jobs.FirstOrDefault(j => j.Id == id);
 
+        //    if (job == null)
+        //        return NotFound();
 
+        //    job.Company = dto.Company;
+        //    job.Position = dto.Position;
+        //    job.Status = dto.Status;
 
+        //    _context.SaveChanges();
 
+        //    return NoContent();
+        //}
 
+        //[Authorize]
+        //[HttpDelete("{id}")]
+        //public ActionResult DeleteJob(int id)
+        //{
+        //    var job = _context.Jobs.FirstOrDefault(j => j.Id == id);
 
+        //    if (job == null)
+        //        return NotFound();
 
+        //    _context.Jobs.Remove(job);
+        //    _context.SaveChanges();
 
-
+        //    return NoContent();
+        //}
     }
 }
