@@ -118,7 +118,12 @@ namespace JobTrackerApi.Controllers
         [HttpPut("{id}")]
         public ActionResult UpdateJob(int id, UpdateJobDto dto)
         {
-            var job = _context.Jobs.FirstOrDefault(j => j.Id == id);
+            var userId = int.Parse(
+                User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+            var job = _context.Jobs.FirstOrDefault(j =>
+                j.Id == id &&
+                j.CreatedByUserId == userId);
 
             if (job == null)
                 return NotFound();
@@ -136,7 +141,12 @@ namespace JobTrackerApi.Controllers
         [HttpDelete("{id}")]
         public ActionResult DeleteJob(int id)
         {
-            var job = _context.Jobs.FirstOrDefault(j => j.Id == id);
+            var userId = int.Parse(
+                User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+            var job = _context.Jobs.FirstOrDefault(j =>
+                j.Id == id &&
+                j.CreatedByUserId == userId);
 
             if (job == null)
                 return NotFound();
@@ -146,5 +156,37 @@ namespace JobTrackerApi.Controllers
 
             return NoContent();
         }
+
+        //[HttpPut("{id}")]
+        //public ActionResult UpdateJob(int id, UpdateJobDto dto)
+        //{
+        //    var job = _context.Jobs.FirstOrDefault(j => j.Id == id);
+
+        //    if (job == null)
+        //        return NotFound();
+
+        //    job.Company = dto.Company;
+        //    job.Position = dto.Position;
+        //    job.Status = dto.Status;
+
+        //    _context.SaveChanges();
+
+        //    return NoContent();
+        //}
+
+        //[Authorize]
+        //[HttpDelete("{id}")]
+        //public ActionResult DeleteJob(int id)
+        //{
+        //    var job = _context.Jobs.FirstOrDefault(j => j.Id == id);
+
+        //    if (job == null)
+        //        return NotFound();
+
+        //    _context.Jobs.Remove(job);
+        //    _context.SaveChanges();
+
+        //    return NoContent();
+        //}
     }
 }
