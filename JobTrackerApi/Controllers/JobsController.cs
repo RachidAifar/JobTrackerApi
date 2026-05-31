@@ -179,6 +179,23 @@ namespace JobTrackerApi.Controllers
             return Ok(stats);
         }
 
+        [Authorize]
+        [HttpGet("filter/{status}")]
+        public IActionResult getJobsByStatus(string status)
+        {
+            var userId = int.Parse(
+                User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+            var jobs = _context.Jobs
+                .Where(j =>
+                    j.CreatedByUserId == userId &&
+                    j.Status == status)
+                .ToList();
+
+            return Ok(jobs);
+
+        }
+
         //[HttpPut("{id}")]
         //public ActionResult UpdateJob(int id, UpdateJobDto dto)
         //{
