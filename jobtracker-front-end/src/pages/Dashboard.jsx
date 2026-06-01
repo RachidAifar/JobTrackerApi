@@ -1,16 +1,21 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
+import { useNavigate } from "react-router-dom";
 
 function Dashboard() {
   const [jobs, setJobs] = useState([]);
-
+  const navigate = useNavigate();
+  const handleLogout = () => {
+  localStorage.removeItem("token");
+  navigate("/");
+    };
   useEffect(() => {
     const fetchJobs = async () => {
       try {
         const token = localStorage.getItem("token");
 
         if (!token) {
-            console.log("No token found");
+            navigate("/");
             return;
         }
 
@@ -31,7 +36,7 @@ function Dashboard() {
     };
 
     fetchJobs();
-  }, []);
+  },  [navigate]);
 
   return (
     <div>
@@ -48,6 +53,9 @@ function Dashboard() {
           </div>
         ))
       )}
+        <button onClick={handleLogout}>
+            Logout
+        </button>
     </div>
   );
 }
