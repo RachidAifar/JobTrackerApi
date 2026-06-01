@@ -35,6 +35,18 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReact",
+        policy =>
+        {
+            policy.AllowAnyOrigin()
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+        });
+});
+
+
 builder.Services.AddControllers();
 
 builder.Services.AddDbContext<JobDbContext>(options =>
@@ -78,6 +90,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 app.UseHttpsRedirection();
+
+app.UseCors("AllowReact");
 
 app.UseAuthentication();   
 app.UseAuthorization();

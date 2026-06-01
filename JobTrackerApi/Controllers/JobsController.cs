@@ -157,6 +157,45 @@ namespace JobTrackerApi.Controllers
             return NoContent();
         }
 
+        [Authorize]
+        [HttpGet("stats")]
+        public IActionResult GetStats()
+        {
+            var userId = int.Parse(
+                User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+            var jobs = _context.Jobs
+                .Where(j => j.CreatedByUserId == userId)
+                .ToList();
+
+            var stats = new
+            {
+                Total = jobs.Count,
+                Applied = jobs.Count(j => j.Status == "Applied"),
+                Interview = jobs.Count(j => j.Status == "Interview"),
+                Rejected = jobs.Count(j => j.Status == "Rejected")
+            };
+
+            return Ok(stats);
+        }
+
+        [Authorize]
+        [HttpGet("filter/{status}")]
+        public IActionResult getJobsByStatus(string status)
+        {
+            var userId = int.Parse(
+                User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+            var jobs = _context.Jobs
+                .Where(j =>
+                    j.CreatedByUserId == userId &&
+                    j.Status == status)
+                .ToList();
+
+            return Ok(jobs);
+
+        }
+
         //[HttpPut("{id}")]
         //public ActionResult UpdateJob(int id, UpdateJobDto dto)
         //{
