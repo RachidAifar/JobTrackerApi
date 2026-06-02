@@ -115,6 +115,9 @@ function Dashboard() {
             <h3>{job.company}</h3>
             <p>{job.position}</p>
             <p>{job.status}</p>
+            <button onClick={() => handleDeleteJob(job.id)}>
+                Delete
+            </button>
           </div>
         ))
       )}
@@ -122,9 +125,7 @@ function Dashboard() {
       <button onClick={handleLogout}>
         Logout
       </button>
-      <button onClick={() => handleDeleteJob(job.id)}>
-         Delete
-      </button>
+      
     </div>
   );
 }
