@@ -24,7 +24,7 @@ function Dashboard() {
         return;
       }
 
-      const response = await api.get("/Jobs/myjobs", {
+      const response = await api.get("/jobs/myjobs", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -59,6 +59,21 @@ function Dashboard() {
       console.error("Error adding job:", error);
     }
   };
+  const handleDeleteJob = async (jobId) => {
+  try {
+    const token = localStorage.getItem("token");
+
+    await api.delete(`/Jobs/${jobId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    fetchJobs();
+  } catch (error) {
+    console.error("Error deleting job:", error);
+  }
+};
 
   useEffect(() => {
     fetchJobs();
@@ -106,6 +121,9 @@ function Dashboard() {
 
       <button onClick={handleLogout}>
         Logout
+      </button>
+      <button onClick={() => handleDeleteJob(job.id)}>
+         Delete
       </button>
     </div>
   );
